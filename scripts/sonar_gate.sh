@@ -34,7 +34,35 @@ SCAN_EXIT_CODE=${PIPESTATUS[0]}
 
 echo "" | tee -a "$LOG_FILE" # เว้นบรรทัด
 
-# 3. ตรวจสอบผลลัพธ์
+# 3. ดึงข้อมูล Coverage จาก SonarQube API
+echo "" | tee -a "$LOG_FILE"
+log_msg "📊 Fetching Coverage Report..."
+
+# ใช้ token จาก sonar-project.properties
+COVERAGE_DATA=$(curl -s -u "sqp_c74bcb76413d2dd2dbd64bb2e3fd2465a1560f78:" \
+  "http://localhost:9000/api/measures/component?component=flutter_husky_sonar&metricKeys=coverage,line_coverage,lines_to_cover,uncovered_lines")
+
+# แสดงผล Coverage
+if echo "$COVERAGE_DATA" | grep -q "coverage"; then
+  COVERAGE=$(echo "$COVERAGE_DATA" | python3 -c "import sys, json; data = json.load(sys.stdin); measures = {m['metric']: m.get('value', 'N/A') for m in data['component'].get('measures', [])}; print(measures.get('coverage', 'N/A'))" 2>/dev/null)
+  LINE_COVERAGE=$(echo "$COVERAGE_DATA" | python3 -c "import sys, json; data = json.load(sys.stdin); measures = {m['metric']: m.get('value', 'N/A') for m in data['component'].get('measures', [])}; print(measures.get('line_coverage', 'N/A'))" 2>/dev/null)
+  LINES_TO_COVER=$(echo "$COVERAGE_DATA" | python3 -c "import sys, json; data = json.load(sys.stdin); measures = {m['metric']: m.get('value', 'N/A') for m in data['component'].get('measures', [])}; print(measures.get('lines_to_cover', 'N/A'))" 2>/dev/null)
+  UNCOVERED=$(echo "$COVERAGE_DATA" | python3 -c "import sys, json; data = json.load(sys.stdin); measures = {m['metric']: m.get('value', 'N/A') for m in data['component'].get('measures', [])}; print(measures.get('uncovered_lines', 'N/A'))" 2>/dev/null)
+  
+  log_msg "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  log_msg "📈 Coverage Report:"
+  log_msg "   Overall Coverage:    ${COVERAGE}%"
+  log_msg "   Line Coverage:       ${LINE_COVERAGE}%"
+  log_msg "   Lines to Cover:      ${LINES_TO_COVER}"
+  log_msg "   Uncovered Lines:     ${UNCOVERED}"
+  log_msg "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+else
+  log_msg "⚠️  Coverage data not available yet"
+fi
+
+echo "" | tee -a "$LOG_FILE"
+
+# 4. ตรวจสอบผลลัพธ์
 if [ $SCAN_EXIT_CODE -eq 0 ]; then
   log_msg "✅ SonarQube Quality Gate PASSED!"
   exit 0

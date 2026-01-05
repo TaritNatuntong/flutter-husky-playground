@@ -41,52 +41,46 @@ echo "🐶 Husky: Manual checking on STAGED files..."
 # - grep .dart$ : เอาเฉพาะไฟล์ลงท้ายด้วย .dart
 staged_dart_files=$(git diff --cached --name-only --diff-filter=ACMR | grep ".dart$")
 
-# 2. เช็คว่ามีไฟล์ Dart ไหม? (ถ้าไม่มีก็จบงานเลย)
+# 2. เช็คว่ามีไฟล์ Dart ไหม? (ถ้าไม่มีก็ข้ามการ format/analyze)
 if [ -z "$staged_dart_files" ]; then
-  echo "✨ No Dart files changed. Skipping checks."
-  exit 0
+  echo "✨ No Dart files changed. Skipping format and analyze."
+  echo "   But will still run tests and SonarQube..."
+  
+  # ข้ามไปรัน tests และ SonarQube
+  skip_dart_checks=true
+else
+  skip_dart_checks=false
+  # แสดงรายชื่อไฟล์ที่จะเช็ค
+  echo "📝 Checking these files:"
+  echo "$staged_dart_files"
 fi
-
-# แสดงรายชื่อไฟล์ที่จะเช็ค (เผื่ออยากดู)
-echo "📝 Checking these files:"
-echo "$staged_dart_files"
 
 # ---------------------------------------------------------
 # 3. รัน Dart Format (เฉพาะไฟล์ที่เลือก)
 # ---------------------------------------------------------
-echo "\n✨ Running Dart Format..."
-# $staged_dart_files จะถูกขยายเป็น list ชื่อไฟล์ส่งไปต่อท้ายคำสั่ง
-dart format $staged_dart_files
-
-# ถ้า format แล้วมีการแก้ไฟล์ เราต้อง add กลับเข้าไปใหม่ด้วย (Optional logic)
-# (แต่ปกติ dart format แก้แล้ว save เลย เราอาจต้อง git add ซ้ำเองถ้ารันในนี้)
+if [ "$skip_dart_checks" = false ]; then
+  echo ""
+  echo "✨ Running Dart Format..."
+  dart format $staged_dart_files
+fi
 
 # ---------------------------------------------------------
 # 4. รัน Flutter Analyze (เฉพาะไฟล์ที่เลือก)
 # ---------------------------------------------------------
-echo "\n🔍 Running Flutter Analyze..."
-# ปิดชั่วคราวเพื่อทดสอบ SonarQube
-# flutter analyze $staged_dart_files
-
-# เก็บ Exit Code ของ Analyze ไว้
-# analyze_exit_code=$?
-
-# 5. ตัดสินใจ (Pass / Fail)
-# if [ $analyze_exit_code -ne 0 ]; then
-#   echo "\n❌ Analyze Failed! Please fix issues in the staged files."
-#   exit 1
-# fi
-
+echo ""
+echo "🔍 Running Flutter Analyze..."
 echo "⏭️  Skipping Flutter Analyze (testing SonarQube)"
 
 # ---------------------------------------------------------
 # 5. รัน Tests พร้อม Generate Coverage
 # ---------------------------------------------------------
-echo "\n🧪 Running Flutter Tests with Coverage..."
+echo ""
+echo "🧪 Running Flutter Tests with Coverage..."
 flutter test --coverage
 
 if [ $? -ne 0 ]; then
-  echo "\n❌ Tests Failed! Please fix test errors."
+  echo ""
+  echo "❌ Tests Failed! Please fix test errors."
   exit 1
 fi
 
@@ -95,14 +89,16 @@ echo "✅ Tests passed! Coverage generated at coverage/lcov.info"
 # ---------------------------------------------------------
 # 6. รัน SonarQube Analysis และเช็ค Quality Gate
 # ---------------------------------------------------------
-echo "\n🔍 Running SonarQube Analysis..."
+echo ""
+echo "🔍 Running SonarQube Analysis..."
 
 # เรียกใช้ script ที่เตรียมไว้แล้ว
 bash scripts/sonar_gate.sh
 
 # เช็ค Exit Code
 if [ $? -ne 0 ]; then
-  echo "\n❌ SonarQube Quality Gate Failed!"
+  echo ""
+  echo "❌ SonarQube Quality Gate Failed!"
   echo "💡 Please check:"
   echo "   - Maintainability Rating must be A"
   echo "   - No Security Issues"
@@ -111,5 +107,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "\n✅ All checks passed (including SonarQube Quality Gate)!"
+echo ""
+echo "✅ All checks passed (including SonarQube Quality Gate)!"
 exit 0
