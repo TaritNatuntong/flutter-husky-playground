@@ -63,8 +63,30 @@ echo "🔍 Running SonarQube Analysis..."
 # เรียกใช้ script ที่เตรียมไว้แล้ว
 bash scripts/sonar_gate.sh
 
+# เก็บ exit code
+SONAR_EXIT_CODE=$?
+
+# แสดง Coverage Report (เสมอ!)
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Coverage Summary:"
+if [ -f "coverage/lcov.info" ]; then
+  total_lines=$(grep -c "^DA:" coverage/lcov.info || echo "0")
+  
+  if [ "$total_lines" -gt 0 ]; then
+    coverage=$(awk "BEGIN {printf \"%.1f\", ($covered_lines/$total_lines)*100}")
+    echo "   Coverage: ${coverage}%"
+    echo "   Lines: ${covered_lines}/${total_lines}"
+  else
+    echo "   No coverage data available"
+  fi
+else
+  echo "   Coverage file not found"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 # เช็ค Exit Code
-if [ $? -ne 0 ]; then
+if [ $SONAR_EXIT_CODE -ne 0 ]; then
   echo ""
   echo "❌ SonarQube Quality Gate Failed!"
   echo "💡 Please check:"
