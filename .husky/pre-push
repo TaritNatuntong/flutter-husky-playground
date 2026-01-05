@@ -1,5 +1,11 @@
+# #!/bin/sh
+# . "$(dirname "$0")/_/husky.sh"
+
+# echo "🧪 Running Unit Tests before pushing..."
+# flutter test
+
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🧪 Running Unit Tests before pushing..."
-flutter test
+# เรียก script ที่เราสร้างไว้
+./scripts/sonar_gate.sh
