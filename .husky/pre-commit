@@ -7,7 +7,7 @@ echo "🐶 Husky: Manual checking on STAGED files..."
 # - diff --cached --name-only : ดูชื่อไฟล์ใน staging area
 # - diff --diff-filter=ACMR : เอาเฉพาะไฟล์ที่ Add, Copy, Modify, Rename (ไม่เอา Deleted)
 # - grep .dart$ : เอาเฉพาะไฟล์ลงท้ายด้วย .dart
-staged_dart_files=$(git diff --cached --name-only --diff-filter=ACMR | grep ".dart$")
+staged_dart_files=$(git diff --cached --name-only --diff-filter=ACMR | grep ".dart$" || true)
 
 # 2. เช็คว่ามีไฟล์ Dart ไหม? (ถ้าไม่มีก็ข้ามการ format/analyze)
 if [ -z "$staged_dart_files" ]; then
