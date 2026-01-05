@@ -7,5 +7,29 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# เรียก script ที่เราสร้างไว้
-./scripts/sonar_gate.sh
+echo "🔍 Running SonarQube Analysis..."
+
+# 1. เช็คว่า Docker เปิดอยู่ไหม (กันเหนียว)
+if ! docker info > /dev/null 2>&1; then
+  echo "❌ Error: Docker is not running. Please start Docker first."
+  exit 1
+fi
+
+# 2. รันคำสั่ง Scanner
+# -Dsonar.qualitygate.wait=true คือคำสั่งสำคัญ! มันจะรอจนกว่า Server จะบอกว่า ผ่าน/ไม่ผ่าน
+# ถ้า Server ตอบว่า "Failed" คำสั่งนี้จะส่งค่า Exit Code เป็น Error ออกมา
+sonar-scanner \
+  -Dsonar.login="squ_620c44ca05e06d216f2b10a0e92313294e5d48d8" \
+  -Dsonar.qualitygate.wait=true
+
+# 3. เช็คผลลัพธ์ ($? คือรหัสผลลัพธ์ของคำสั่งล่าสุด)
+if [ $? -ne 0 ]; then
+    echo " "
+    echo "❌ SonarQube Quality Gate FAILED!"
+    echo "🚫 Push has been blocked. Please fix the issues above."
+    exit 1  # ออกด้วยเลข 1 เพื่อบอก Git ว่า "ห้าม Push"
+fi
+
+echo " "
+echo "✅ SonarQube Passed! Pushing code..."
+exit 0
