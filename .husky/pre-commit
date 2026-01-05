@@ -1,31 +1,80 @@
-#!/bin/sh
-# บรรทัดนี้คือการเรียกเครื่องยนต์ Husky (ห้ามลบ)
-. "$(dirname "$0")/_/husky.sh"
+# #!/bin/sh
+# # บรรทัดนี้คือการเรียกเครื่องยนต์ Husky (ห้ามลบ)
+# . "$(dirname "$0")/_/husky.sh"
 
-# 1. แจ้งเตือนสวยๆ ว่าเริ่มทำงานแล้ว
-echo "------------------------------------------------"
-echo "🐶 Husky is watching you..."
-echo "------------------------------------------------"
+# # 1. แจ้งเตือนสวยๆ ว่าเริ่มทำงานแล้ว
+# echo "------------------------------------------------"
+# echo "🐶 Husky is watching you..."
+# echo "------------------------------------------------"
 
-# 2. จัดระเบียบโค้ด (Format) อัตโนมัติ
-echo "✨ Running Dart Format..."
-dart format .
+# # 2. จัดระเบียบโค้ด (Format) อัตโนมัติ
+# echo "✨ Running Dart Format..."
+# dart format .
 
-# 3. ตรวจสอบ Syntax (Analyze) - ถ้าพัง ให้หยุด Commit
-echo "🔍 Running Flutter Analyze..."
-flutter analyze
-if [ $? -ne 0 ]; then
-  echo "❌ Error: Code analysis failed! Please fix issues."
-  exit 1
-fi
-
-# 4. (ทางเลือก) รัน Unit Test - ถ้ารันไม่ผ่าน ให้หยุด Commit
-# echo "🧪 Running Tests..."
-# flutter test
+# # 3. ตรวจสอบ Syntax (Analyze) - ถ้าพัง ให้หยุด Commit
+# echo "🔍 Running Flutter Analyze..."
+# flutter analyze
 # if [ $? -ne 0 ]; then
-#   echo "❌ Error: Tests failed!"
+#   echo "❌ Error: Code analysis failed! Please fix issues."
 #   exit 1
 # fi
 
-echo "✅ All checks passed! Committing now..."
-echo "------------------------------------------------"
+# # 4. (ทางเลือก) รัน Unit Test - ถ้ารันไม่ผ่าน ให้หยุด Commit
+# # echo "🧪 Running Tests..."
+# # flutter test
+# # if [ $? -ne 0 ]; then
+# #   echo "❌ Error: Tests failed!"
+# #   exit 1
+# # fi
+
+# echo "✅ All checks passed! Committing now..."
+# echo "------------------------------------------------"
+
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🐶 Husky: Manual checking on STAGED files..."
+
+# 1. หาไฟล์ .dart ที่ถูก Staged (เฉพาะที่ Add มา)
+# - diff --cached --name-only : ดูชื่อไฟล์ใน staging area
+# - diff --diff-filter=ACMR : เอาเฉพาะไฟล์ที่ Add, Copy, Modify, Rename (ไม่เอา Deleted)
+# - grep .dart$ : เอาเฉพาะไฟล์ลงท้ายด้วย .dart
+staged_dart_files=$(git diff --cached --name-only --diff-filter=ACMR | grep ".dart$")
+
+# 2. เช็คว่ามีไฟล์ Dart ไหม? (ถ้าไม่มีก็จบงานเลย)
+if [ -z "$staged_dart_files" ]; then
+  echo "✨ No Dart files changed. Skipping checks."
+  exit 0
+fi
+
+# แสดงรายชื่อไฟล์ที่จะเช็ค (เผื่ออยากดู)
+echo "📝 Checking these files:"
+echo "$staged_dart_files"
+
+# ---------------------------------------------------------
+# 3. รัน Dart Format (เฉพาะไฟล์ที่เลือก)
+# ---------------------------------------------------------
+echo "\n✨ Running Dart Format..."
+# $staged_dart_files จะถูกขยายเป็น list ชื่อไฟล์ส่งไปต่อท้ายคำสั่ง
+dart format $staged_dart_files
+
+# ถ้า format แล้วมีการแก้ไฟล์ เราต้อง add กลับเข้าไปใหม่ด้วย (Optional logic)
+# (แต่ปกติ dart format แก้แล้ว save เลย เราอาจต้อง git add ซ้ำเองถ้ารันในนี้)
+
+# ---------------------------------------------------------
+# 4. รัน Flutter Analyze (เฉพาะไฟล์ที่เลือก)
+# ---------------------------------------------------------
+echo "\n🔍 Running Flutter Analyze..."
+flutter analyze $staged_dart_files
+
+# เก็บ Exit Code ของ Analyze ไว้
+analyze_exit_code=$?
+
+# 5. ตัดสินใจ (Pass / Fail)
+if [ $analyze_exit_code -ne 0 ]; then
+  echo "\n❌ Analyze Failed! Please fix issues in the staged files."
+  exit 1
+fi
+
+echo "\n✅ All checks passed!"
+exit 0

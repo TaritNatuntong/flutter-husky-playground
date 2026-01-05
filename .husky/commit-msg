@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# ส่ง path ของไฟล์ข้อความ commit ไปให้ Dart ตรวจ
+dart run tool/check_commit.dart "$1"
