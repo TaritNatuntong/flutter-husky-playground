@@ -9,7 +9,7 @@ echo "🌿 Current Branch: $CURRENT_BRANCH"
 
 # กำหนด Branch ที่อนุญาตให้รัน (Allow List)
 case "$CURRENT_BRANCH" in
-  main|develop|feature/*|hotfix/*|bugfix/*)
+  main|staging|develop|feature/*|hotfix/*|bugfix/*)
     echo "✅ Branch '$CURRENT_BRANCH' is allowed. Proceeding with checks..."
     ;;
   *)
