@@ -23,7 +23,7 @@ log_msg "📝 Log file will be saved to: $LOG_FILE"
 # - 2>&1 : รวม Error output เข้ากับ Standard output
 # - tee -a : แสดงผลหน้าจอด้วย และเขียนลงไฟล์ด้วย
 sonar-scanner \
-  -Dsonar.login="sqp_86ab995cb815a2faee111644b7bc251bf05dd36e" \
+  -Dsonar.login="sqp_3c98561089ec64179386fdabdf75ec732af00ede" \
   -Dsonar.qualitygate.wait=true \
   2>&1 | tee -a "$LOG_FILE"
 
@@ -39,7 +39,7 @@ echo "" | tee -a "$LOG_FILE"
 log_msg "📊 Fetching Coverage Report..."
 
 # ใช้ token จาก sonar-project.properties
-COVERAGE_DATA=$(curl -s -u "sqp_c74bcb76413d2dd2dbd64bb2e3fd2465a1560f78:" \
+COVERAGE_DATA=$(curl -s -u "sqp_3c98561089ec64179386fdabdf75ec732af00ede:" \
   "http://localhost:9000/api/measures/component?component=flutter_husky_sonar&metricKeys=coverage,line_coverage,lines_to_cover,uncovered_lines")
 
 # แสดงผล Coverage
