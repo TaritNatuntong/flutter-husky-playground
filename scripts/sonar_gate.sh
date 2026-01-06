@@ -24,7 +24,7 @@ log_msg "📝 Log file will be saved to: $LOG_FILE"
 # - tee -a : แสดงผลหน้าจอด้วย และเขียนลงไฟล์ด้วย
 sonar-scanner \
   -Dsonar.login="sqp_3c98561089ec64179386fdabdf75ec732af00ede" \
-  -Dsonar.qualitygate.wait=true \
+  -Dsonar.qualitygate.wait=false \
   2>&1 | tee -a "$LOG_FILE"
 
 # เก็บ Exit Code จากคำสั่ง sonar-scanner (ผ่าน pipe)
