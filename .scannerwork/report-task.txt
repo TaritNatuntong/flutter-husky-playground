@@ -1,6 +1,7 @@
 projectKey=flutter_husky_sonar
 serverUrl=http://localhost:9000
-serverVersion=25.12.0.117093
-dashboardUrl=http://localhost:9000/dashboard?id=flutter_husky_sonar
-ceTaskId=896d6692-2edf-49c1-8590-b543794493fe
-ceTaskUrl=http://localhost:9000/api/ce/task?id=896d6692-2edf-49c1-8590-b543794493fe
+serverVersion=10.3.0.82913
+branch=staging
+dashboardUrl=http://localhost:9000/dashboard?id=flutter_husky_sonar&branch=staging
+ceTaskId=AZuSZXMlGOYYeIyWHVp1
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AZuSZXMlGOYYeIyWHVp1

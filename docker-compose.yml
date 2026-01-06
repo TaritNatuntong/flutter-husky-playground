@@ -7,14 +7,16 @@ services:
       - "9000:9000"
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      
+      # ⚠️ ใช้ Absolute Path (/opt/sonarqube/...) และชื่อไฟล์ branch-plugin.jar ตาม Dockerfile
+      - SONAR_WEB_JAVAADDITIONALOPTS=-javaagent:/opt/sonarqube/extensions/plugins/branch-plugin.jar=web
+      - SONAR_CE_JAVAADDITIONALOPTS=-javaagent:/opt/sonarqube/extensions/pluginsranch-plugin.jar=ce
+
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
-      
-      # ⚠️ แนะนำให้ปิดบรรทัดนี้ไปก่อนครับ เพื่อบังคับให้ใช้ Plugin ที่เราฝังใน Image
       # - sonarqube_extensions:/opt/sonarqube/extensions
 
 volumes:
   sonarqube_data:
   sonarqube_logs:
-  # sonarqube_extensions:  <-- ปิดตรงนี้ด้วยถ้าข้างบนปิด

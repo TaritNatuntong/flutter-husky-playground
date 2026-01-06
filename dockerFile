@@ -1,13 +1,23 @@
-# https://github.com/insideapp-oss/sonar-flutter/releases
- 
-FROM sonarqube:latest
- 
-# กำหนดเวอร์ชันปลั๊กอิน
-ENV PLUGIN_VERSION=0.5.3-SNAPSHOT
-ENV PLUGIN_URL=https://github.com/insideapp-oss/sonar-flutter/releases/download/$PLUGIN_VERSION/sonar-flutter-plugin-$PLUGIN_VERSION.jar
- 
-# ดาวน์โหลดปลั๊กอินและคัดลอกไปที่ SonarQube
-RUN curl -L $PLUGIN_URL -o /opt/sonarqube/extensions/plugins/sonar-flutter-plugin.jar
- 
-# กำหนด permission เพื่อให้ SonarQube ใช้งานได้
-RUN chmod 644 /opt/sonarqube/extensions/plugins/sonar-flutter-plugin.jar
+# ⚠️ เปลี่ยนจาก latest เป็น 10.3-community เพื่อให้เข้ากับ Branch Plugin 1.18.0
+FROM sonarqube:10.3-community
+
+USER root
+
+# --- 1. Flutter Plugin ---
+ENV FLUTTER_PLUGIN_VERSION=0.5.3-SNAPSHOT
+ENV FLUTTER_PLUGIN_URL=https://github.com/insideapp-oss/sonar-flutter/releases/download/$FLUTTER_PLUGIN_VERSION/sonar-flutter-plugin-$FLUTTER_PLUGIN_VERSION.jar
+
+RUN curl -L $FLUTTER_PLUGIN_URL -o /opt/sonarqube/extensions/plugins/sonar-flutter-plugin.jar \
+    && chmod 644 /opt/sonarqube/extensions/plugins/sonar-flutter-plugin.jar \
+    && chown sonarqube /opt/sonarqube/extensions/plugins/sonar-flutter-plugin.jar
+
+# --- 2. Community Branch Plugin (version 1.18.0) ---
+ENV BRANCH_PLUGIN_VERSION=1.18.0
+ENV BRANCH_PLUGIN_URL=https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/$BRANCH_PLUGIN_VERSION/sonarqube-community-branch-plugin-$BRANCH_PLUGIN_VERSION.jar
+
+# โหลดและตั้งชื่อไฟล์สั้นๆ ว่า branch-plugin.jar เพื่อเรียกใช้ง่ายๆ
+RUN curl -L $BRANCH_PLUGIN_URL -o /opt/sonarqube/extensions/plugins/branch-plugin.jar \
+    && chmod 644 /opt/sonarqube/extensions/plugins/branch-plugin.jar \
+    && chown sonarqube /opt/sonarqube/extensions/plugins/branch-plugin.jar
+
+USER sonarqube
