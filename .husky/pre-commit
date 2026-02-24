@@ -23,80 +23,80 @@ echo "🐶 Husky: Manual checking on STAGED files..."
 #   echo "$staged_dart_files"
 # fi
 
-# # ---------------------------------------------------------
-# # 3. รัน Dart Format (เฉพาะไฟล์ที่เลือก)
-# # ---------------------------------------------------------
-# if [ "$skip_dart_checks" = false ]; then
-#   echo ""
-#   echo "✨ Running Dart Format..."
-#   dart format $staged_dart_files
-# fi
+# ---------------------------------------------------------
+# 3. รัน Dart Format (เฉพาะไฟล์ที่เลือก)
+# ---------------------------------------------------------
+if [ "$skip_dart_checks" = false ]; then
+  echo ""
+  echo "✨ Running Dart Format..."
+  dart format $staged_dart_files
+fi
 
-# # ---------------------------------------------------------
-# # 4. รัน Flutter Analyze (เฉพาะไฟล์ที่เลือก)
-# # ---------------------------------------------------------
-# echo ""
-# echo "🔍 Running Flutter Analyze..."
-# echo "⏭️  Skipping Flutter Analyze (testing SonarQube)"
+# ---------------------------------------------------------
+# 4. รัน Flutter Analyze (เฉพาะไฟล์ที่เลือก)
+# ---------------------------------------------------------
+echo ""
+echo "🔍 Running Flutter Analyze..."
+echo "⏭️  Skipping Flutter Analyze (testing SonarQube)"
 
-# # ---------------------------------------------------------
-# # 5. รัน Tests พร้อม Generate Coverage
-# # ---------------------------------------------------------
-# echo ""
-# echo "🧪 Running Flutter Tests with Coverage..."
-# flutter test --coverage
+# ---------------------------------------------------------
+# 5. รัน Tests พร้อม Generate Coverage
+# ---------------------------------------------------------
+echo ""
+echo "🧪 Running Flutter Tests with Coverage..."
+flutter test --coverage
 
-# if [ $? -ne 0 ]; then
-#   echo ""
-#   echo "❌ Tests Failed! Please fix test errors."
-#   exit 1
-# fi
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Tests Failed! Please fix test errors."
+  exit 1
+fi
 
-# echo "✅ Tests passed! Coverage generated at coverage/lcov.info"
+echo "✅ Tests passed! Coverage generated at coverage/lcov.info"
 
-# # ---------------------------------------------------------
-# # 6. รัน SonarQube Analysis และเช็ค Quality Gate
-# # ---------------------------------------------------------
-# echo ""
-# echo "🔍 Running SonarQube Analysis..."
+# ---------------------------------------------------------
+# 6. รัน SonarQube Analysis และเช็ค Quality Gate
+# ---------------------------------------------------------
+echo ""
+echo "🔍 Running SonarQube Analysis..."
 
-# # เรียกใช้ script ที่เตรียมไว้แล้ว
-# bash scripts/sonar_gate.sh
+# เรียกใช้ script ที่เตรียมไว้แล้ว
+bash scripts/sonar_gate.sh
 
-# # เก็บ exit code
-# SONAR_EXIT_CODE=$?
+# เก็บ exit code
+SONAR_EXIT_CODE=$?
 
-# # แสดง Coverage Report (เสมอ!)
-# echo ""
-# echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-# echo "📊 Coverage Summary:"
-# if [ -f "coverage/lcov.info" ]; then
-#   total_lines=$(grep -c "^DA:" coverage/lcov.info || echo "0")
+# แสดง Coverage Report (เสมอ!)
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Coverage Summary:"
+if [ -f "coverage/lcov.info" ]; then
+  total_lines=$(grep -c "^DA:" coverage/lcov.info || echo "0")
   
-#   if [ "$total_lines" -gt 0 ]; then
-#     coverage=$(awk "BEGIN {printf \"%.1f\", ($covered_lines/$total_lines)*100}")
-#     echo "   Coverage: ${coverage}%"
-#     echo "   Lines: ${covered_lines}/${total_lines}"
-#   else
-#     echo "   No coverage data available"
-#   fi
-# else
-#   echo "   Coverage file not found"
-# fi
-# echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  if [ "$total_lines" -gt 0 ]; then
+    coverage=$(awk "BEGIN {printf \"%.1f\", ($covered_lines/$total_lines)*100}")
+    echo "   Coverage: ${coverage}%"
+    echo "   Lines: ${covered_lines}/${total_lines}"
+  else
+    echo "   No coverage data available"
+  fi
+else
+  echo "   Coverage file not found"
+fi
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# # เช็ค Exit Code
-# if [ $SONAR_EXIT_CODE -ne 0 ]; then
-#   echo ""
-#   echo "❌ SonarQube Quality Gate Failed!"
-#   echo "💡 Please check:"
-#   echo "   - Maintainability Rating must be A"
-#   echo "   - No Security Issues"
-#   echo "   - No Reliability Issues"
-#   echo "   - Coverage must meet threshold"
-#   exit 1
-# fi
+# เช็ค Exit Code
+if [ $SONAR_EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ SonarQube Quality Gate Failed!"
+  echo "💡 Please check:"
+  echo "   - Maintainability Rating must be A"
+  echo "   - No Security Issues"
+  echo "   - No Reliability Issues"
+  echo "   - Coverage must meet threshold"
+  exit 1
+fi
 
-# echo ""
-# echo "✅ All checks passed (including SonarQube Quality Gate)!"
-# exit 0
+echo ""
+echo "✅ All checks passed (including SonarQube Quality Gate)!"
+exit 0
